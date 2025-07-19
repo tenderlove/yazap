@@ -2,7 +2,6 @@ const HelpMessageWriter = @This();
 
 const std = @import("std");
 const Arg = @import("Arg.zig");
-const BufferedWriter = std.io.BufferedWriter(4096, std.fs.File.Writer);
 const Command = @import("Command.zig");
 const ParsedCommand = @import("parser/ParseResult.zig").ParsedCommand;
 
@@ -12,15 +11,14 @@ const ParsedCommand = @import("parser/ParseResult.zig").ParsedCommand;
 const SIGNATURE_LEFT_PADDING = 4;
 
 /// Used to store the help content before writing into the `stderr`.
-buffer: BufferedWriter,
+buffer: std.io.BufferedWriter(4096, @TypeOf(std.fs.File.stderr().deprecatedWriter())),
 /// Command whose help to write.
 command: *const ParsedCommand,
 
 pub fn init(command: *const ParsedCommand) HelpMessageWriter {
+    const stderr = std.fs.File.stderr().deprecatedWriter();
     return HelpMessageWriter{
-        .buffer = std.io.bufferedWriter(
-            std.io.getStdErr().writer(),
-        ),
+        .buffer = std.io.bufferedWriter(stderr),
         .command = command,
     };
 }
@@ -51,9 +49,10 @@ fn writeHeader(self: *HelpMessageWriter) !void {
     const command = self.command.deref();
 
     if (command.countPositionalArgs() >= 1) {
+        const braces = getBraces(command.hasProperty(.positional_arg_required));
         try writer.print(
             " {c}ARGS{c}",
-            getBraces(command.hasProperty(.positional_arg_required)),
+            .{ braces[0], braces[1] },
         );
     }
 
@@ -62,9 +61,10 @@ fn writeHeader(self: *HelpMessageWriter) !void {
     }
 
     if (command.countSubcommands() >= 1) {
+        const braces = getBraces(command.hasProperty(.subcommand_required));
         try writer.print(
             " {c}COMMAND{c}",
-            getBraces(command.hasProperty(.subcommand_required)),
+            .{ braces[0], braces[1] },
         );
     }
 
@@ -93,7 +93,7 @@ fn writePositionalArgs(self: *HelpMessageWriter) !void {
             try line.description.writeAll(description);
         }
 
-        try writer.print("{}", .{line});
+        try writer.print("{any}", .{line});
     }
 }
 
@@ -114,7 +114,7 @@ fn writeSubcommands(self: *HelpMessageWriter) !void {
             try line.description.writeAll(description);
         }
 
-        try writer.print("{}", .{line});
+        try writer.print("{any}", .{line});
     }
 }
 
@@ -177,23 +177,23 @@ fn writeOption(self: *HelpMessageWriter, option: *const Arg) !void {
     // Description.
     if (option.description) |description| {
         try line.description.writeAll(description);
-        try writer.print("{}", .{line});
+        try writer.print("{any}", .{line});
     }
 
     if (option.valid_values) |valid_values| {
         // If the description is not set then print the values at the same line.
         if (option.description == null) {
-            try line.description.print("values: {s}", .{valid_values});
-            return writer.print("{}", .{line});
+            try line.description.print("values: {any}", .{valid_values});
+            return writer.print("{any}", .{line});
         }
 
         // If the description is set then print the values at the new line
         // but just below the description.
         var new_line = Line.init();
         try new_line.description.addPadding(2);
-        try new_line.description.print("values: {s}", .{valid_values});
+        try new_line.description.print("values: {any}", .{valid_values});
 
-        try writer.print("{}", .{new_line});
+        try writer.print("{any}", .{new_line});
     }
 }
 
@@ -246,7 +246,7 @@ const Line = struct {
         _ = fmt;
         _ = options;
 
-        try writer.print("{}{}\n", .{ self.signature, self.description });
+        try writer.print("{any}{any}\n", .{ self.signature, self.description });
 
         const overflow_signature = self.signature.overflowContent();
         const overflow_description = self.description.overflowContent();
@@ -267,7 +267,7 @@ const Line = struct {
             try new_line.description.writeAll(description);
         }
 
-        try writer.print("{}", .{new_line});
+        try writer.print("{any}", .{new_line});
     }
 };
 

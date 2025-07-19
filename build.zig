@@ -9,7 +9,12 @@ pub fn build(b: *std.Build) void {
 
 fn testStep(b: *std.Build) void {
     // Test file information.
-    const tests = b.addTest(.{ .root_source_file = b.path("src/test.zig") });
+    const tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/test.zig"),
+            .target = b.graph.host,
+        }),
+    });
     // This runs the unit tests.
     const runner = b.addRunArtifact(tests);
 
@@ -37,8 +42,10 @@ fn examplesStep(b: *std.Build, yazap: *std.Build.Module) void {
         // Binary information of an example.
         const executable = b.addExecutable(.{
             .name = example_name,
-            .root_source_file = example_file_path,
-            .target = b.graph.host,
+            .root_module = b.createModule(.{
+                .root_source_file = example_file_path,
+                .target = b.graph.host,
+            }),
         });
         // Add yazap as a dependency.
         executable.root_module.addImport("yazap", yazap);

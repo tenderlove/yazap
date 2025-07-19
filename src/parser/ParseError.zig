@@ -18,7 +18,7 @@ pub fn setContext(self: *ParseError, ctx: Context) void {
 
 /// Prints the error context in a nice error message.
 pub fn print(self: *const ParseError) PrintError!void {
-    var buffer = std.io.bufferedWriter(std.io.getStdErr().writer());
+    var buffer = std.io.bufferedWriter(std.fs.File.stderr().deprecatedWriter());
     const writer = buffer.writer();
 
     // Print the error prefix for nicer output.
