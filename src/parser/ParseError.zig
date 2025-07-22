@@ -44,7 +44,7 @@ pub fn print(self: *const ParseError) PrintError!void {
             try writer.print("unrecognized option '{s}'\n", .{option});
         },
         .option_value_not_provided => |ctx| {
-            try writer.print("a value is missing for option '{}'\n", .{ctx.option});
+            try writer.print("a value is missing for option '{any}'\n", .{ctx.option});
 
             if (ctx.valid_values) |valid_values| {
                 try writer.writeByte('\n');
