@@ -57,12 +57,12 @@ pub fn print(self: *const ParseError) PrintError!void {
         },
         .unexpected_option_value => |ctx| {
             try writer.print(
-                "a value '{s}' was not expected for option '{}'\n",
+                "a value '{s}' was not expected for option '{s}'\n",
                 .{ ctx.value, ctx.option },
             );
         },
         .empty_option_value => |ctx| {
-            try writer.print("empty value was not expected for option '{}'\n", .{ctx.option});
+            try writer.print("empty value was not expected for option '{any}'\n", .{ctx.option});
 
             if (ctx.valid_values) |valid_values| {
                 try writer.writeByte('\n');
@@ -75,7 +75,7 @@ pub fn print(self: *const ParseError) PrintError!void {
         },
         .invalid_option_value => |ctx| {
             try writer.print(
-                "'{s}' is invalid value for option '{}'\n\n",
+                "'{s}' is invalid value for option '{any}'\n\n",
                 .{ ctx.invalid_value, ctx.option },
             );
             try writer.writeAll("help: valid values are:\n");
@@ -86,7 +86,7 @@ pub fn print(self: *const ParseError) PrintError!void {
         },
         .too_few_option_value => |ctx| {
             try writer.print(
-                "minimum of '{d}' values were expected for option '{}'\n\n",
+                "minimum of '{d}' values were expected for option '{any}'\n\n",
                 .{ ctx.min_values, ctx.option },
             );
             try writer.print(
@@ -96,7 +96,7 @@ pub fn print(self: *const ParseError) PrintError!void {
         },
         .too_many_option_value => |ctx| {
             try writer.print(
-                "only upto '{d}' values were expected for option '{}'\n\n",
+                "only upto '{d}' values were expected for option '{any}'\n\n",
                 .{ ctx.max_values, ctx.option },
             );
             try writer.print(
