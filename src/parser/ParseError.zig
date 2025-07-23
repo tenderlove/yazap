@@ -57,7 +57,7 @@ pub fn print(self: *const ParseError) PrintError!void {
         },
         .unexpected_option_value => |ctx| {
             try writer.print(
-                "a value '{s}' was not expected for option '{s}'\n",
+                "a value '{s}' was not expected for option '{any}'\n",
                 .{ ctx.value, ctx.option },
             );
         },
