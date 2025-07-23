@@ -41,7 +41,7 @@ pub fn print(self: *const ParseError) PrintError!void {
             try writer.print("subcommand is missing for command '{s}'\n", .{command});
         },
         .unrecognized_option => |option| {
-            try writer.print("unrecognized option '{s}'\n", .{option});
+            try writer.print("unrecognized option '{any}'\n", .{option});
         },
         .option_value_not_provided => |ctx| {
             try writer.print("a value is missing for option '{any}'\n", .{ctx.option});
